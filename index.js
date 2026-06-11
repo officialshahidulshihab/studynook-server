@@ -56,9 +56,17 @@ async function run() {
       console.log(roomData);
     });
 
+    
     app.get(`/api/rooms/:id`, async(req, res)=>{
       const {id}=req.params
       const result=await roomCollection.findOne({_id: new ObjectId(id)})
+      res.send(result)
+    })
+    
+    app.patch("/api/rooms/:id",async(req, res)=>{
+      const {id}=req.params
+      const updatedData=req.body
+      const result=await roomCollection.updateOne({_id: new ObjectId(id)}, {$set:updatedData})
       res.send(result)
     })
 
