@@ -35,6 +35,15 @@ async function run() {
 
     const roomCollection = db.collection("rooms");
 
+    app.get("/api/rooms/featured", async (req, res) => {
+      const rooms = await roomCollection
+        .find()
+        .sort({ createdAt: -1 })
+        .limit(6)
+        .toArray();
+      res.send(rooms);
+    });
+
     app.get("/api/rooms", async (req, res) => {
       const result = await roomCollection.find().toArray();
       res.send(result);
@@ -53,14 +62,12 @@ async function run() {
       res.send(result)
     })
 
-    app.get("/api/rooms/featured", async (req, res) => {
-      const rooms = await roomCollection
-        .find()
-        .sort({ createdAt: -1 })
-        .limit(6)
-        .toArray();
-      res.send(rooms);
-    });
+    app.get("/api/rooms/user/:userId", async(req, res)=>{
+      const {userId}=req.params
+      const result=await roomCollection.find({owner:userId}).toArray()
+      res.send(result)
+    })
+
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
