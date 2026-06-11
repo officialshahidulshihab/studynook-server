@@ -3,7 +3,7 @@ const cors = require("cors");
 
 const dotenv = require("dotenv");
 dotenv.config();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -40,14 +40,18 @@ async function run() {
       res.send(result);
     });
 
-    
-
     app.post("/api/rooms/add", async (req, res) => {
       const roomData = req.body;
       const result = await roomCollection.insertOne(roomData);
       res.send(result);
       console.log(roomData);
     });
+
+    app.get(`/api/rooms/:id`, async(req, res)=>{
+      const {id}=req.params
+      const result=await roomCollection.findOne({_id: new ObjectId(id)})
+      res.send(result)
+    })
 
     app.get("/api/rooms/featured", async (req, res) => {
       const rooms = await roomCollection
