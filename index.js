@@ -37,6 +37,13 @@ async function run() {
 
     
 
+    app.post("/api/rooms/add", async (req, res) => {
+      const roomData = req.body;
+      const result = await roomCollection.insertOne(roomData);
+      res.send(result);
+      console.log(roomData);
+    });
+
     app.get("/api/rooms/featured", async (req, res) => {
       const rooms = await roomCollection
         .find()
