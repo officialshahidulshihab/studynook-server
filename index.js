@@ -35,6 +35,11 @@ async function run() {
 
     const roomCollection = db.collection("rooms");
 
+    app.get("/api/rooms", async (req, res) => {
+      const result = await roomCollection.find().toArray();
+      res.send(result);
+    });
+
     
 
     app.post("/api/rooms/add", async (req, res) => {
