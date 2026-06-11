@@ -44,6 +44,11 @@ async function run() {
       res.send(rooms);
     });
 
+    app.get(`/api/rooms/:id`, async(req, res)=>{
+      const {id}=req.params
+      const result=await roomCollection.findOne({_id: new ObjectId(id)})
+      res.send(result)
+    })
     app.get("/api/rooms", async (req, res) => {
       const result = await roomCollection.find().toArray();
       res.send(result);
@@ -57,11 +62,6 @@ async function run() {
     });
 
     
-    app.get(`/api/rooms/:id`, async(req, res)=>{
-      const {id}=req.params
-      const result=await roomCollection.findOne({_id: new ObjectId(id)})
-      res.send(result)
-    })
     
     app.patch("/api/rooms/:id",async(req, res)=>{
       const {id}=req.params
@@ -74,6 +74,13 @@ async function run() {
       const {userId}=req.params
       const result=await roomCollection.find({owner:userId}).toArray()
       res.send(result)
+    })
+
+    app.delete("/api/rooms/:id", async(req,res)=>{
+      const {id}=req.params
+      const result=await roomCollection.deleteOne({_id: new ObjectId(id)})
+      res.send(result)
+
     })
 
   } finally {
