@@ -93,9 +93,15 @@ async function run() {
         endHour: { $gt: startHour },
       });
 
+      app.get("/api/booking/:userId", verifyToken, async (req, res) => {
+        const { userId } = req.params;
+        const result = await bookingCollection.find({ userId: userId }).toArray();
+        res.send(result);
+      });
 
 
-    app.get(`/api/rooms/:id`, verifyToken, async (req, res) => {
+
+    app.get(`/api/rooms/:id`,  async (req, res) => {
       const { id } = req.params;
       const result = await roomCollection.findOne({ _id: new ObjectId(id) });
       res.send(result);
@@ -103,7 +109,7 @@ async function run() {
 
 
 
-    app.patch("/api/rooms/:id",  async (req, res) => {
+    app.patch("/api/rooms/:id",verifyToken,  async (req, res) => {
       const { id } = req.params;
       const updatedData = req.body;
       const result = await roomCollection.updateOne(
@@ -119,11 +125,6 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/api/booking/:userId", verifyToken, async (req, res) => {
-      const { userId } = req.params;
-      const result = await bookingCollection.find({ userId: userId }).toArray();
-      res.send(result);
-    });
 
     app.delete("/api/rooms/:id",verifyToken, async (req, res) => {
       const { id } = req.params;
