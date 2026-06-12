@@ -10,7 +10,13 @@ const PORT = process.env.PORT || 5000;
 
 const uri = process.env.MONGODB_URI;
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "https://studynook-client-side-three.vercel.app",
+  ],
+  credentials: true,
+}));
 app.use(express.json());
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -65,12 +71,6 @@ async function run() {
       res.send(rooms);
     });
 
-    app.get(`/api/rooms/:id`, verifyToken, async (req, res) => {
-      const { id } = req.params;
-      const result = await roomCollection.findOne({ _id: new ObjectId(id) });
-      res.send(result);
-    });
-
     app.get("/api/rooms", async (req, res) => {
       const result = await roomCollection.find().toArray();
       res.send(result);
@@ -83,7 +83,27 @@ async function run() {
       console.log(roomData);
     });
 
-    app.patch("/api/rooms/:id", verifyToken, async (req, res) => {
+    app.post("/api/booking", async (req, res) => {
+      const bookingData = req.body;
+      const { roomId, date, startHour, endHour } = bookingData;
+      const conflict = await bookingCollection.findOne({
+        roomId,
+        date,
+        startHour: { $lt: endHour },
+        endHour: { $gt: startHour },
+      });
+
+
+
+    app.get(`/api/rooms/:id`, verifyToken, async (req, res) => {
+      const { id } = req.params;
+      const result = await roomCollection.findOne({ _id: new ObjectId(id) });
+      res.send(result);
+    });
+
+
+
+    app.patch("/api/rooms/:id",  async (req, res) => {
       const { id } = req.params;
       const updatedData = req.body;
       const result = await roomCollection.updateOne(
@@ -118,15 +138,6 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/api/booking", async (req, res) => {
-      const bookingData = req.body;
-      const { roomId, date, startHour, endHour } = bookingData;
-      const conflict = await bookingCollection.findOne({
-        roomId,
-        date,
-        startHour: { $lt: endHour },
-        endHour: { $gt: startHour },
-      });
       if (conflict) {
         return res
           .status(409)
