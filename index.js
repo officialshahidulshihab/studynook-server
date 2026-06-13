@@ -115,33 +115,42 @@ async function run() {
 
     app.get("/api/booking/:userId", verifyToken, async (req, res) => {
       const { userId } = req.params;
-      const result = await bookingCollection
-        .find({ userId: userId })
-        .toArray();
+      const result = await bookingCollection.find({ userId: userId }).toArray();
       res.send(result);
     });
- 
+
     app.post("/api/booking", async (req, res) => {
       const bookingData = req.body;
       const { roomId, date, startHour, endHour } = bookingData;
- 
+        const roomIdStr = roomId?.$oid || roomId;
+
+
       const conflict = await bookingCollection.findOne({
         roomId,
         date,
         startHour: { $lt: endHour },
         endHour: { $gt: startHour },
       });
- 
+
       if (conflict) {
         return res
           .status(409)
           .send({ message: "This time slot is already booked." });
       }
- 
-      const result = await bookingCollection.insertOne(bookingData);
+
+      const result = await bookingCollection.insertOne({
+        ...bookingData,
+        status: "confirmed",
+      });
+
+      await roomCollection.updateOne(
+        { _id: new ObjectId(roomIdStr) },
+        { $inc: { bookingCount: 1 } },
+      );
+
       res.send(result);
     });
- 
+
     app.delete("/api/booking/:bookingId", verifyToken, async (req, res) => {
       const { bookingId } = req.params;
       const result = await bookingCollection.deleteOne({
@@ -149,6 +158,19 @@ async function run() {
       });
       res.send(result);
     });
+
+    app.patch(
+      "/api/booking/:bookingId/cancel",
+      verifyToken,
+      async (req, res) => {
+        const { bookingId } = req.params;
+        const result = await bookingCollection.updateOne(
+          { _id: new ObjectId(bookingId) },
+          { $set: { status: "cancelled" } },
+        );
+        res.send(result);
+      },
+    );
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
